@@ -164,10 +164,20 @@ const VoiceTranslator = () => {
               </select>
             </div>
             
-            <div className="min-h-[150px] p-6 rounded-2xl bg-white/50 dark:bg-dark-surface/50 border border-gray-200 dark:border-gray-700 shadow-inner">
-              <p className="text-xl text-gray-800 dark:text-gray-200 leading-relaxed">
-                {transcript || <span className="text-gray-400 italic">"Press the microphone and start speaking..."</span>}
-              </p>
+            <div className="relative">
+              <textarea
+                value={transcript}
+                onChange={(e) => setTranscript(e.target.value)}
+                placeholder="Press the microphone and start speaking, or type here..."
+                className="w-full min-h-[150px] p-6 rounded-2xl bg-white/50 dark:bg-dark-surface/50 border border-gray-200 dark:border-gray-700 shadow-inner text-xl text-gray-800 dark:text-gray-200 leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+              />
+              <button
+                onClick={() => simulateTranslation(transcript)}
+                disabled={!transcript.trim() || translatedText === 'Translating...'}
+                className="absolute bottom-4 right-4 bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center gap-2"
+              >
+                {translatedText === 'Translating...' ? 'Translating...' : 'Translate'}
+              </button>
             </div>
             
             <div className="flex justify-center mt-8">
