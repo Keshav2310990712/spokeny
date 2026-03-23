@@ -3,6 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../slices/authSlice';
 import { authAPI } from '../services/api';
+import { motion } from 'framer-motion';
+import { User, Mail, Lock, ArrowRight, Globe, CheckCircle } from 'lucide-react';
+import Button from '../components/Button';
+import InputField from '../components/InputField';
 
 const Signup = () => {
   const [name, setName] = useState('');
@@ -40,82 +44,145 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background blobs */}
-      <div className="absolute top-10 right-20 w-72 h-72 bg-brand-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animation-blob"></div>
-      <div className="absolute bottom-10 left-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animation-blob animation-delay-2000"></div>
+      {/* Animated Background */}
+      <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
+      <div className="absolute -bottom-32 -left-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
 
-      <div className="max-w-md w-full glass p-8 rounded-3xl z-10">
-        <div>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900 dark:text-white mb-2">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="max-w-md w-full space-y-8 z-10"
+      >
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <Link to="/" className="inline-flex items-center space-x-2 mb-6">
+            <Globe className="h-8 w-8 text-brand-500" />
+            <span className="font-bold text-2xl tracking-tight bg-gradient-to-r from-brand-500 to-purple-500 bg-clip-text text-transparent">
+              Spokeny
+            </span>
+          </Link>
+          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white">
             Join Spokeny
           </h2>
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-400">
             Unlock your language learning potential
           </p>
         </div>
-        
-        {error && (
-          <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
-        <form className="mt-8 space-y-6" onSubmit={submitHandler}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
-              <input
-                type="text"
-                required
-                className="appearance-none rounded-xl relative block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white/50 dark:bg-dark-surface/50 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 sm:text-sm"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email address</label>
-              <input
-                type="email"
-                required
-                className="appearance-none rounded-xl relative block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white/50 dark:bg-dark-surface/50 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 sm:text-sm"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-              <input
-                type="password"
-                required
-                className="appearance-none rounded-xl relative block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white/50 dark:bg-dark-surface/50 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 sm:text-sm"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-brand-600 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all shadow-lg hover:shadow-brand-500/50 disabled:opacity-50"
+        {/* Form Card */}
+        <motion.form
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          onSubmit={submitHandler}
+          className="glass p-8 rounded-3xl space-y-6"
+        >
+          {/* Error Alert */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-sm font-medium"
             >
-              {loading ? 'Creating account...' : 'Sign up'}
-            </button>
-          </div>
-        </form>
+              {error}
+            </motion.div>
+          )}
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Already have an account?{' '}
-            <Link to="/login" className="font-medium text-brand-500 hover:text-brand-400 transition-colors">
-              Sign in
-            </Link>
-          </p>
+          {/* Name Field */}
+          <InputField
+            label="Full name"
+            type="text"
+            placeholder="John Doe"
+            icon={User}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+
+          {/* Email Field */}
+          <InputField
+            label="Email address"
+            type="email"
+            placeholder="you@example.com"
+            icon={Mail}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+
+          {/* Password Field */}
+          <InputField
+            label="Password"
+            type="password"
+            placeholder="••••••••"
+            icon={Lock}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            error={password && password.length < 6 ? 'At least 6 characters' : ''}
+          />
+
+          {/* Submit Button */}
+          <Button
+            variant="primary"
+            size="lg"
+            type="submit"
+            loading={loading}
+            disabled={loading}
+            className="w-full"
+            icon={ArrowRight}
+          >
+            {loading ? 'Creating account...' : 'Create Account'}
+          </Button>
+
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white dark:bg-dark-bg text-gray-600 dark:text-gray-400">
+                Already have an account?
+              </span>
+            </div>
+          </div>
+
+          {/* Sign In Link */}
+          <Link to="/login" className="w-full">
+            <Button variant="secondary" size="lg" className="w-full">
+              Sign In Instead
+            </Button>
+          </Link>
+        </motion.form>
+
+        {/* Benefits */}
+        <div className="glass rounded-2xl p-6 space-y-3">
+          <p className="text-sm font-semibold text-gray-900 dark:text-white mb-4">What you get:</p>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+              <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+              <span>Access to 1000+ free courses</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+              <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+              <span>AI-powered translation tool</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+              <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+              <span>Track your progress instantly</span>
+            </div>
+          </div>
         </div>
-      </div>
+
+        {/* Footer */}
+        <p className="text-center text-xs text-gray-600 dark:text-gray-400">
+          By signing up, you agree to our{' '}
+          <a href="#" className="font-medium text-brand-500 hover:text-brand-600 transition-colors">
+            Terms of Service
+          </a>
+        </p>
+      </motion.div>
     </div>
   );
 };

@@ -6,6 +6,8 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Profile from './pages/Profile';
+import MyLearning from './pages/MyLearning';
 import { CoursesPage } from './pages/Courses';
 import VoiceTranslator from './pages/VoiceTranslator';
 import Cart from './pages/Cart';
@@ -22,6 +24,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/my-learning" element={<MyLearning />} />
           <Route path="/free-courses" element={<CoursesPage type="free" />} />
           <Route path="/paid-courses" element={<CoursesPage type="paid" />} />
           <Route path="/course/:id" element={<CourseDetail />} />
