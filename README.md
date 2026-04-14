@@ -10,9 +10,13 @@ Spokeny is a full-stack learning platform with a React + Vite frontend and a Nod
 
 ## Tech Stack
 
-- Frontend: React, Vite, Redux Toolkit, Tailwind CSS, Framer Motion
+- Frontend: React, Vite, Redux Toolkit, Nodemailer
 - Backend: Node.js, Express, MongoDB, Mongoose
 - AI: Gemini via backend translation route
+
+## Deployment Links
+Deployed at:
+https://spokeny.vercel.app/
 
 ## Project Structure
 
