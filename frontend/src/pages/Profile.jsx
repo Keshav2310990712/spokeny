@@ -173,19 +173,25 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Additional Info */}
-        <div className="mt-8 grid grid-cols-3 gap-4 sm:gap-6">
-          <div className="glass rounded-2xl p-4 sm:p-6 text-center">
-            <p className="text-2xl sm:text-3xl font-bold text-brand-500">0</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Courses Enrolled</p>
+        {/* Gamification Stats */}
+        <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+          <div className="glass rounded-2xl p-4 sm:p-6 text-center border-t-4 border-orange-500 shadow-md">
+            <p className="text-2xl sm:text-3xl font-bold text-orange-500 flex items-center justify-center gap-2">
+              🔥 {userInfo?.streak || 0}
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Day Streak</p>
           </div>
-          <div className="glass rounded-2xl p-4 sm:p-6 text-center">
-            <p className="text-2xl sm:text-3xl font-bold text-purple-500">0</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Certificates</p>
+          <div className="glass rounded-2xl p-4 sm:p-6 text-center border-t-4 border-brand-500 shadow-md">
+            <p className="text-2xl sm:text-3xl font-bold text-brand-500">{userInfo?.xp || 0}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Total XP</p>
           </div>
-          <div className="glass rounded-2xl p-4 sm:p-6 text-center">
-            <p className="text-2xl sm:text-3xl font-bold text-pink-500">0%</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Completion</p>
+          <div className="glass rounded-2xl p-4 sm:p-6 text-center border-t-4 border-purple-500 shadow-md">
+            <p className="text-2xl sm:text-3xl font-bold text-purple-500">{Math.floor((userInfo?.studyTime || 0) / 60)}h {(userInfo?.studyTime || 0) % 60}m</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Study Time</p>
+          </div>
+          <div className="glass rounded-2xl p-4 sm:p-6 text-center border-t-4 border-pink-500 shadow-md">
+            <p className="text-2xl sm:text-3xl font-bold text-pink-500">{userInfo?.badges?.length || 0}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Badges</p>
           </div>
         </div>
       </div>

@@ -28,6 +28,8 @@ export const authAPI = {
     api.post('/users/login', { email, password }),
   getProfile: () =>
     api.get('/users/profile'),
+  updateProgress: (data) =>
+    api.put('/users/progress', data),
 };
 
 export const courseAPI = {

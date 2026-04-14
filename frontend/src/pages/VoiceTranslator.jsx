@@ -1,9 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Mic, MicOff, Volume2, Globe, Sparkles } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateProgressState } from '../slices/authSlice';
+import { authAPI } from '../services/api';
 
 const VoiceTranslator = () => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const dispatch = useDispatch();
+  const { userInfo } = useSelector((state) => state.auth);
   const [translatedText, setTranslatedText] = useState('');
   const [sourceLang, setSourceLang] = useState('en'); // Source language - English
   const [targetLang, setTargetLang] = useState('es'); // Target language - Spanish
@@ -65,11 +70,21 @@ const VoiceTranslator = () => {
       setTranslatedText(data.translation);
       handleSpeak(data.translation);
 
+      // Add gamification XP only if logged in
+      if (userInfo) {
+        try {
+          const progressRes = await authAPI.updateProgress({ xpToAdd: 5, studyTimeToAdd: 0.5 });
+          dispatch(updateProgressState(progressRes.data));
+        } catch (err) {
+          console.error('Failed to update progress:', err);
+        }
+      }
+
     } catch (error) {
       console.error('Translation error:', error);
       setTranslatedText('❌ ' + (error.message || 'Translation failed. Check backend.'));
     }
-  }, [sourceLang, targetLang, handleSpeak]);
+  }, [sourceLang, targetLang, handleSpeak, dispatch, userInfo]);
 
   useEffect(() => {
     if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {

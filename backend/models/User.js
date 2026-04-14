@@ -12,7 +12,12 @@ const userSchema = new mongoose.Schema({
     course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
     completedLessons: [{ type: mongoose.Schema.Types.ObjectId }],
     score: { type: Number, default: 0 }
-  }]
+  }],
+  xp: { type: Number, default: 0 },
+  streak: { type: Number, default: 0 },
+  studyTime: { type: Number, default: 0 },
+  lastActiveDate: { type: Date, default: null },
+  badges: [{ type: String }]
 }, { timestamps: true });
 
 userSchema.pre('save', async function(next) {
