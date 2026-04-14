@@ -53,4 +53,9 @@ export const paymentAPI = {
     api.post('/payment/create-checkout-session', { items }),
 };
 
+export const aiAPI = {
+  askCoach: (payload) =>
+    api.post('/ai/coach', payload),
+};
+
 export default api;

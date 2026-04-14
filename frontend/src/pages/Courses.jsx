@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Search, Filter, X, Zap } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { addToCart } from '../slices/cartSlice';
 import { enrollCourse } from '../slices/enrollmentSlice';
 import { useNavigate } from 'react-router-dom';
@@ -8,71 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import CourseCard from '../components/CourseCard';
 import Button from '../components/Button';
-import SectionHeader from '../components/SectionHeader';
 import InputField from '../components/InputField';
-
-const LANGUAGES = [
-  'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Russian', 'Japanese', 'Korean', 'Mandarin Chinese', 'Arabic',
-  'Hindi', 'Bengali', 'Urdu', 'Indonesian', 'Turkish', 'Vietnamese', 'Thai', 'Dutch', 'Polish', 'Greek',
-  'Czech', 'Swedish', 'Danish', 'Finnish', 'Norwegian', 'Hungarian', 'Romanian', 'Bulgarian', 'Serbian', 'Croatian',
-  'Slovak', 'Slovenian', 'Lithuanian', 'Latvian', 'Estonian', 'Hebrew', 'Persian (Farsi)', 'Swahili', 'Amharic', 'Yoruba',
-  'Zulu', 'Afrikaans', 'Tagalog', 'Malay', 'Tamil', 'Telugu', 'Marathi', 'Gujarati', 'Punjabi', 'Kannada'
-];
-
-const PROGRAMMING = [
-  'JavaScript', 'Python', 'Java', 'C++', 'C#', 'Ruby', 'PHP', 'Swift', 'Kotlin', 'Go',
-  'Rust', 'TypeScript', 'SQL', 'HTML/CSS', 'Bash/Shell', 'R', 'MATLAB', 'Scala', 'Perl', 'Haskell'
-];
-
-const DUMMY_COURSES = [
-  // --- FREE TIER LANGUAGES ---
-  ...LANGUAGES.map((lang, index) => ({
-    id: `free_lang_${index + 1}`,
-    title: `${lang} for Beginners`,
-    description: `Learn basic conversational phrases in ${lang} completely free.`,
-    category: 'Language',
-    price: 0,
-    thumbnail: `https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&q=80&w=500&sig=${index}`,
-    duration: '5h 00m',
-    rating: Number((Math.random() * (4.8 - 4.2) + 4.2).toFixed(1)),
-  })),
-
-  // --- PREMIUM TIER LANGUAGES ---
-  ...LANGUAGES.map((lang, index) => ({
-    id: `premium_lang_${index + 1}`,
-    title: `Advanced ${lang} Masterclass`,
-    description: `Achieve full fluency and cultural nuances in ${lang} with premium AI coaching.`,
-    category: 'Language',
-    price: 49.99,
-    thumbnail: `https://images.unsplash.com/photo-1543783207-ec64e4d95325?auto=format&fit=crop&q=80&w=500&sig=${index + 100}`,
-    duration: '35h 00m',
-    rating: Number((Math.random() * (5.0 - 4.6) + 4.6).toFixed(1)),
-  })),
-
-  // --- FREE TIER PROGRAMMING ---
-  ...PROGRAMMING.map((prog, index) => ({
-    id: `free_prog_${index + 1}`,
-    title: `Introduction to ${prog}`,
-    description: `A free crash course into the syntax and basics of ${prog}.`,
-    category: 'Programming',
-    price: 0,
-    thumbnail: `https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?auto=format&fit=crop&q=80&w=500&sig=${index + 200}`,
-    duration: '8h 30m',
-    rating: Number((Math.random() * (4.7 - 4.1) + 4.1).toFixed(1)),
-  })),
-
-  // --- PREMIUM TIER PROGRAMMING ---
-  ...PROGRAMMING.map((prog, index) => ({
-    id: `premium_prog_${index + 1}`,
-    title: `Full-Stack ${prog} Engineering`,
-    description: `Enterprise-level system design and advanced paradigms in ${prog}.`,
-    category: 'Programming',
-    price: 99.99,
-    thumbnail: `https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80&w=500&sig=${index + 300}`,
-    duration: '60h 00m',
-    rating: Number((Math.random() * (5.0 - 4.7) + 4.7).toFixed(1)),
-  }))
-];
+import { COURSE_CATALOG } from '../data/courseCatalog';
 
 export const CoursesPage = ({ type }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,22 +19,18 @@ export const CoursesPage = ({ type }) => {
   const { userInfo } = useSelector((state) => state.auth);
   const { enrolledCourses } = useSelector((state) => state.enrollment);
 
-  // Filter courses
   const filteredCourses = useMemo(() => {
-    return DUMMY_COURSES.filter((course) => {
-      // Filter by type
+    return COURSE_CATALOG.filter((course) => {
       if (type === 'free' && course.price > 0) return false;
       if (type === 'paid' && course.price === 0) return false;
-
-      // Filter by category
       if (selectedCategory !== 'All' && course.category !== selectedCategory) return false;
 
-      // Filter by search query
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         return (
           course.title.toLowerCase().includes(query) ||
-          course.description.toLowerCase().includes(query)
+          course.description.toLowerCase().includes(query) ||
+          course.tags.some((tag) => tag.toLowerCase().includes(query))
         );
       }
 
@@ -110,6 +43,7 @@ export const CoursesPage = ({ type }) => {
       navigate('/login');
       return;
     }
+
     dispatch(
       enrollCourse({
         id: course.id,
@@ -117,6 +51,7 @@ export const CoursesPage = ({ type }) => {
         thumbnail: course.thumbnail,
         duration: course.duration,
         category: course.category,
+        lessonCount: course.lessons.length,
       })
     );
   };
@@ -129,7 +64,6 @@ export const CoursesPage = ({ type }) => {
 
   return (
     <div className="min-h-screen">
-      {/* Header Section */}
       <section className="relative pt-20 pb-12 bg-gradient-to-br from-brand-600/5 via-purple-600/3 to-transparent border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -143,7 +77,7 @@ export const CoursesPage = ({ type }) => {
                 <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
               </span>
-              <span className="text-sm">{type === 'free' ? '🎓 Free Learning' : '⭐ Premium Courses'}</span>
+              <span className="text-sm">{type === 'free' ? 'Free Learning' : 'Premium Courses'}</span>
             </div>
 
             <h1 className="text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white">
@@ -151,21 +85,19 @@ export const CoursesPage = ({ type }) => {
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl">
               {type === 'free'
-                ? 'Start your learning journey with high-quality free courses. No credit card required.'
-                : 'Unlock advanced courses with AI coaching, personalized learning paths, and certifications.'}
+                ? 'Start your learning journey with richer beginner content, guided lessons, and practical outcomes.'
+                : 'Unlock deeper tracks with more advanced lessons, capstones, and stronger professional use cases.'}
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Filters & Search Section */}
       <section className="sticky top-16 z-40 bg-white dark:bg-dark-bg/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-          {/* Search Bar */}
           <div className="flex gap-4 items-center">
             <div className="flex-1">
               <InputField
-                placeholder="Search courses..."
+                placeholder="Search courses, topics, or skills..."
                 icon={Search}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -173,7 +105,6 @@ export const CoursesPage = ({ type }) => {
             </div>
           </div>
 
-          {/* Category Filters */}
           <div className="flex gap-2 flex-wrap">
             {categories.map((cat) => (
               <motion.button
@@ -192,14 +123,12 @@ export const CoursesPage = ({ type }) => {
             ))}
           </div>
 
-          {/* Results Count */}
           <div className="text-sm text-gray-600 dark:text-gray-400">
             {filteredCourses.length} course{filteredCourses.length !== 1 ? 's' : ''} found
           </div>
         </div>
       </section>
 
-      {/* Courses Grid */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatePresence mode="wait">
