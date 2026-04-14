@@ -1,25 +1,21 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Mic, MicOff, Volume2, Globe, Sparkles, MessageSquare, SendHorizonal } from 'lucide-react';
+import { Mic, MicOff, Volume2, Globe, Sparkles } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
 import { updateProgressState } from '../slices/authSlice';
-import { aiAPI, authAPI } from '../services/api';
+import { authAPI } from '../services/api';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const VoiceTranslator = () => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const dispatch = useDispatch();
-  const location = useLocation();
   const { userInfo } = useSelector((state) => state.auth);
   const [translatedText, setTranslatedText] = useState('');
   const [sourceLang, setSourceLang] = useState('en'); // Source language - English
   const [targetLang, setTargetLang] = useState('es'); // Target language - Spanish
-  const [coachPrompt, setCoachPrompt] = useState('');
-  const [coachReply, setCoachReply] = useState('');
-  const [coachLoading, setCoachLoading] = useState(false);
   
   const recognitionRef = useRef(null);
-  const coachSectionRef = useRef(null);
 
   const handleSpeak = useCallback((text) => {
     if (!text) return;
@@ -47,7 +43,7 @@ const VoiceTranslator = () => {
       
       console.log('Sending translation request:', { text, sourceLang, targetLang });
       
-      const response = await fetch('http://localhost:5000/api/ai/translate', {
+      const response = await fetch(`${API_URL}/ai/translate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,19 +120,6 @@ const VoiceTranslator = () => {
     }
   }, [simulateTranslation, sourceLang]);
 
-  useEffect(() => {
-    if (location.state?.coachPrompt) {
-      setCoachPrompt(location.state.coachPrompt);
-      setCoachReply('');
-    }
-
-    if (location.state?.openCoach) {
-      setTimeout(() => {
-        coachSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 150);
-    }
-  }, [location.state]);
-
   const toggleListen = () => {
     if (isListening) {
       recognitionRef.current?.stop();
@@ -146,33 +129,6 @@ const VoiceTranslator = () => {
       recognitionRef.current?.start();
     }
     setIsListening(!isListening);
-  };
-
-  const handleAskCoach = async () => {
-    if (!coachPrompt.trim()) {
-      return;
-    }
-
-    try {
-      setCoachLoading(true);
-      setCoachReply('');
-
-      const response = await aiAPI.askCoach({
-        prompt: coachPrompt,
-        courseTitle: location.state?.courseTitle,
-        lessonTitle: location.state?.lessonTitle,
-        task: location.state?.task,
-      });
-
-      setCoachReply(response.data.reply);
-    } catch (error) {
-      setCoachReply(
-        error.response?.data?.message ||
-          'The AI coach could not answer right now. Please try again in a moment.'
-      );
-    } finally {
-      setCoachLoading(false);
-    }
   };
 
   return (
@@ -338,63 +294,6 @@ const VoiceTranslator = () => {
               >
                 <Volume2 size={24} />
               </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div
-        ref={coachSectionRef}
-        className="w-full mt-10 glass rounded-[2.5rem] p-8 md:p-10 border border-gray-200 dark:border-gray-700"
-      >
-        <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-              <MessageSquare className="w-7 h-7 text-brand-500" />
-              AI Study Coach
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-2 max-w-2xl">
-              Use this when you want help understanding a project, practice task, or lesson step by step. The translator above stays exactly the same.
-            </p>
-          </div>
-          {location.state?.lessonTitle && (
-            <div className="px-4 py-2 rounded-full bg-brand-500/10 text-brand-500 text-sm font-semibold">
-              From: {location.state.lessonTitle}
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Ask for help with your task
-            </label>
-            <textarea
-              value={coachPrompt}
-              onChange={(e) => setCoachPrompt(e.target.value)}
-              placeholder="Example: Explain what this project wants me to build, give me steps, and show me a small example."
-              className="w-full min-h-[220px] p-5 rounded-2xl bg-white/50 dark:bg-dark-surface/50 border border-gray-200 dark:border-gray-700 shadow-inner text-base text-gray-800 dark:text-gray-200 leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
-            />
-            <button
-              onClick={handleAskCoach}
-              disabled={!coachPrompt.trim() || coachLoading}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <SendHorizonal className="w-4 h-4" />
-              {coachLoading ? 'Thinking...' : 'Ask AI Coach'}
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Coach response
-            </label>
-            <div className="min-h-[220px] p-5 rounded-2xl bg-brand-50 dark:bg-brand-900/10 border border-brand-200 dark:border-brand-500/30 shadow-inner whitespace-pre-wrap text-gray-800 dark:text-gray-200 leading-relaxed">
-              {coachReply || (
-                <span className="text-brand-400/60 italic">
-                  The AI coach will break your task into simpler steps here.
-                </span>
-              )}
             </div>
           </div>
         </div>

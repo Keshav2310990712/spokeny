@@ -6,8 +6,6 @@ dotenv.config();
 const router = express.Router();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const TEXT_MODEL = 'gemini-2.5-flash';
-
 console.log("Gemini API Key loaded:", !!process.env.GEMINI_API_KEY);
 
 // Language code to full name mapping
@@ -66,68 +64,6 @@ const languageMap = {
   'or': 'Odia'
 };
 
-router.post('/coach', async (req, res) => {
-  try {
-    const { prompt, courseTitle, lessonTitle, task, history = [] } = req.body;
-
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({
-        message: 'Missing GEMINI_API_KEY in backend/.env',
-      });
-    }
-
-    if (!prompt || prompt.trim().length === 0) {
-      return res.status(400).json({ message: 'Prompt is required' });
-    }
-
-    const recentHistory = history
-      .slice(-8)
-      .map((message) => {
-        const speaker = message.role === 'assistant' ? 'AI Coach' : 'Learner';
-        return `${speaker}: ${message.content}`;
-      })
-      .join('\n');
-
-    const model = genAI.getGenerativeModel({
-      model: TEXT_MODEL
-    });
-
-    const coachPrompt = `You are a friendly study coach inside an e-learning app.
-Help the learner based on their exact question, the course, the lesson, and the task.
-Do not give the same answer every time.
-Be practical, encouraging, and concise.
-When useful, use short sections:
-1. What this means
-2. Steps
-3. Example
-4. Common mistakes
-
-Course: ${courseTitle || 'Unknown course'}
-Lesson: ${lessonTitle || 'Unknown lesson'}
-Task: ${task || 'No task provided'}
-
-Recent conversation:
-${recentHistory || 'No previous conversation yet.'}
-
-Latest learner request:
-${prompt}`;
-
-    const result = await model.generateContent(coachPrompt);
-    const response = result?.response?.text?.().trim();
-
-    if (!response) {
-      throw new Error('Empty coach response');
-    }
-
-    res.json({ reply: response });
-  } catch (error) {
-    console.error('Coach Error:', error.message);
-    res.status(500).json({
-      message: error.message || 'AI coach failed',
-    });
-  }
-});
-
 router.post('/translate', async (req, res) => {
   try {
     const { text, sourceLanguage, targetLanguage } = req.body;
@@ -153,7 +89,7 @@ router.post('/translate', async (req, res) => {
     try {
       // Try using Gemini API
       const model = genAI.getGenerativeModel({
-        model: TEXT_MODEL
+        model: "gemini-2.5-flash"
       });
 
       const prompt = `Translate this text from ${sourceLangName} to ${targetLangName}. Return ONLY the translated text, nothing else, no explanations.

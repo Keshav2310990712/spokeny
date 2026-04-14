@@ -14,12 +14,9 @@ import {
   Share2,
   Target,
   Sparkles,
-  MessageSquare,
-  SendHorizonal,
 } from 'lucide-react';
 import { enrollCourse, updateProgress } from '../slices/enrollmentSlice';
 import { addToCart } from '../slices/cartSlice';
-import { aiAPI } from '../services/api';
 import { getCourseById } from '../data/courseCatalog';
 
 const CourseDetail = () => {
@@ -31,9 +28,6 @@ const CourseDetail = () => {
   const course = getCourseById(id);
   const [successMessage, setSuccessMessage] = useState('');
   const [selectedLessonId, setSelectedLessonId] = useState(course?.lessons[0]?.id ?? null);
-  const [coachPrompt, setCoachPrompt] = useState('');
-  const [coachMessages, setCoachMessages] = useState([]);
-  const [coachLoading, setCoachLoading] = useState(false);
 
   const enrolledCourse = enrolledCourses.find((item) => item.id === course?.id);
   const isEnrolled = Boolean(enrolledCourse);
@@ -51,10 +45,6 @@ const CourseDetail = () => {
 
     return course.lessons.find((lesson) => lesson.id === selectedLessonId) ?? course.lessons[0];
   }, [course, selectedLessonId]);
-
-  const defaultCoachPrompt = selectedLesson
-    ? `I am working on "${selectedLesson.title}" in "${course?.title}". Explain what this task wants me to do, give me step-by-step guidance, and show me a small example.\n\nTask: ${selectedLesson.practice}`
-    : '';
 
   if (!course) {
     return (
@@ -136,57 +126,6 @@ const CourseDetail = () => {
         lessonId,
       })
     );
-  };
-
-  const handlePrepareAiCoach = () => {
-    setCoachPrompt(defaultCoachPrompt);
-  };
-
-  const handleAskAiCoach = async () => {
-    const nextPrompt = coachPrompt.trim() || defaultCoachPrompt;
-    if (!nextPrompt || !selectedLesson) {
-      return;
-    }
-
-    const userMessage = {
-      role: 'user',
-      content: nextPrompt,
-    };
-    const nextHistory = [...coachMessages, userMessage];
-
-    try {
-      setCoachLoading(true);
-      setCoachMessages(nextHistory);
-      setCoachPrompt('');
-
-      const response = await aiAPI.askCoach({
-        prompt: nextPrompt,
-        courseTitle: course.title,
-        lessonTitle: selectedLesson.title,
-        task: selectedLesson.practice,
-        history: nextHistory,
-      });
-
-      setCoachMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: response.data.reply,
-        },
-      ]);
-    } catch (error) {
-      setCoachMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content:
-            error.response?.data?.message ||
-            'The AI coach could not answer right now. Please try again in a moment.',
-        },
-      ]);
-    } finally {
-      setCoachLoading(false);
-    }
   };
 
   return (
@@ -411,23 +350,6 @@ const CourseDetail = () => {
                     <p className="text-sm text-gray-700 dark:text-gray-300">
                       {selectedLesson.practice}
                     </p>
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      <button
-                        onClick={handlePrepareAiCoach}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-dark-surface border border-brand-200 dark:border-brand-500/30 text-brand-600 dark:text-brand-300 text-sm font-semibold hover:border-brand-500 transition-colors"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                        Fill AI prompt
-                      </button>
-                      <button
-                        onClick={handleAskAiCoach}
-                        disabled={coachLoading}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-semibold hover:bg-brand-600 transition-colors disabled:opacity-50"
-                      >
-                        <SendHorizonal className="w-4 h-4" />
-                        {coachLoading ? 'Asking AI...' : 'Ask AI here'}
-                      </button>
-                    </div>
                   </div>
                   <div className="rounded-2xl bg-purple-500/5 border border-purple-500/10 p-5">
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
@@ -437,74 +359,6 @@ const CourseDetail = () => {
                     <p className="text-sm text-gray-700 dark:text-gray-300">
                       Read the explanation once, try the practice out loud or in code, and then mark it complete so your progress stays grounded in actual work.
                     </p>
-                  </div>
-                </div>
-
-                <div className="mt-6 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 bg-white/40 dark:bg-dark-surface/40">
-                  <div className="flex items-center gap-2 mb-3">
-                    <MessageSquare className="w-5 h-5 text-brand-500" />
-                    <h4 className="font-semibold text-gray-900 dark:text-white">
-                      AI Task Coach
-                    </h4>
-                  </div>
-
-                  <textarea
-                    value={coachPrompt}
-                    onChange={(event) => setCoachPrompt(event.target.value)}
-                    placeholder="Ask Gemini to explain this task, break it into steps, or give you an example."
-                    className="w-full min-h-[140px] p-4 rounded-2xl bg-white/60 dark:bg-dark-surface/60 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
-                  />
-
-                  <div className="flex flex-wrap gap-3 mt-4">
-                    <button
-                      onClick={handlePrepareAiCoach}
-                      className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:border-brand-500 transition-colors"
-                    >
-                      Use suggested prompt
-                    </button>
-                    <button
-                      onClick={handleAskAiCoach}
-                      disabled={coachLoading}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-semibold hover:bg-brand-600 transition-colors disabled:opacity-50"
-                    >
-                      <SendHorizonal className="w-4 h-4" />
-                      {coachLoading ? 'Asking Gemini...' : 'Send to Gemini'}
-                    </button>
-                  </div>
-
-                  <div className="mt-5 space-y-4">
-                    {coachMessages.length > 0 ? (
-                      coachMessages.map((message, index) => (
-                        <div
-                          key={`${message.role}-${index}`}
-                          className={`rounded-2xl p-4 whitespace-pre-wrap ${
-                            message.role === 'user'
-                              ? 'bg-gray-100 dark:bg-dark-surface ml-6'
-                              : 'bg-brand-50 dark:bg-brand-900/10 mr-6 border border-brand-200 dark:border-brand-500/20'
-                          }`}
-                        >
-                          <p className="text-xs uppercase tracking-wide font-semibold mb-2 text-gray-500">
-                            {message.role === 'user' ? 'You' : 'AI Coach'}
-                          </p>
-                          <p className="text-sm text-gray-800 dark:text-gray-200">
-                            {message.content}
-                          </p>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="rounded-2xl p-4 bg-brand-50 dark:bg-brand-900/10 border border-dashed border-brand-200 dark:border-brand-500/20 text-sm text-gray-600 dark:text-gray-400">
-                        Ask a question here and this lesson will fetch a Gemini-based answer for the selected task.
-                      </div>
-                    )}
-
-                    {coachLoading && (
-                      <div className="rounded-2xl p-4 bg-brand-50 dark:bg-brand-900/10 mr-6 border border-brand-200 dark:border-brand-500/20">
-                        <p className="text-xs uppercase tracking-wide font-semibold mb-2 text-gray-500">
-                          AI Coach
-                        </p>
-                        <p className="text-sm text-gray-800 dark:text-gray-200">Thinking...</p>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
